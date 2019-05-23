@@ -1,9 +1,10 @@
 version: '2'
 services:
+
   mongorsn1:
+    image: mongo-server
     container_name: mongors1n1
     hostname: mongors1n1
-    image: mongo:4.0.9
     command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
       - 27017:27017
@@ -12,13 +13,14 @@ services:
     environment:
       TERM: xterm
     volumes:
+      - ./mongod.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/data1:/data/db
 
   mongors1n2:
     container_name: mongors1n2
     hostname: mongors1n2
-    image: mongo:4.0.9
+    image: mongo-server
     command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
       - 27027:27017
@@ -27,13 +29,14 @@ services:
     environment:
       TERM: xterm
     volumes:
+      - ./mongod.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/data2:/data/db
 
   mongors1n3:
     container_name: mongors1n3
     hostname: mongors1n3
-    image: mongo:4.0.9
+    image: mongo-server
     command: mongod --shardsvr --replSet mongors1 --dbpath /data/db --port 27017
     ports:
       - 27037:27017
@@ -42,52 +45,58 @@ services:
     environment:
       TERM: xterm
     volumes:
+      - ./mongod.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/data3:/data/db
 
   mongocfg1:
     container_name: mongocfg1
     hostname: mongocfg1
-    image: mongo:4.0.9
+    image: mongo-server
     command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
     environment:
       TERM: xterm
     expose:
       - "27017"
     volumes:
+      - ./mongod_config.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/config1:/data/db
 
   mongocfg2:
     container_name: mongocfg2
     hostname: mongocfg2
-    image: mongo:4.0.9
+    image: mongo-server
     command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
     environment:
       TERM: xterm
     expose:
       - "27017"
     volumes:
+      - ./mongod_config.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/config2:/data/db
 
   mongocfg3:
     container_name: mongocfg3
     hostname: mongocfg3
-    image: mongo:4.0.9
+    image: mongo-server
     command: mongod --configsvr --replSet mongors1conf --dbpath /data/db --port 27017
     environment:
       TERM: xterm
     expose:
       - "27017"
     volumes:
+      - ./mongod_config.conf:/etc/mongod.conf:ro
       - /etc/localtime:/etc/localtime:ro
       - /mongo_cluster/config3:/data/db
 
   mongos1:
+    command: docker build -t mongos ./build/mongos/
+    image: mongos
     container_name: mongos1
     hostname: mongos1
-    image: mongo:4.0.9
+    image: mongos
     depends_on:
       - mongocfg1
       - mongocfg2
@@ -98,4 +107,5 @@ services:
     expose:
       - "27017"
     volumes:
+      - ./mongos.conf:/etc/mongos.conf:ro
       - /etc/localtime:/etc/localtime:ro
